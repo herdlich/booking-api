@@ -1,10 +1,11 @@
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
 from src.app.schemas import RoomCreate, RoomResponse
 from src.app.service import create_room, get_all_rooms, delete_room
 from src.app.database import get_session
+from src.app.exceptions import IncorrectRoomIdError
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
@@ -22,5 +23,11 @@ def get_all_rooms_endpoint(session: Annotated[Session, Depends(get_session)]):
 
 @router.delete("/{room_id}", summary="Delete Room")
 def delete_room_endpoint(room_id: int, session: Annotated[Session, Depends(get_session)]):
-    delete_room(session, room_id)
-    return {"status": "success", "message": "booking deleted"}
+    try:
+        delete_room(session, room_id)
+        return {"status": "success", "message": "booking deleted"}
+    except IncorrectRoomIdError:
+        raise HTTPException(
+            status_code=404,
+            detail="This Room ID does not exist",
+        )
