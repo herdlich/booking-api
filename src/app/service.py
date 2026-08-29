@@ -98,7 +98,7 @@ def create_booking(session: Session, data: BookingCreate, user_id: int) -> model
             end_at=data.end_at,
         )
 
-        room_id = session.get(models.Booking, data.room_id)
+        room_id = session.get(models.Room, data.room_id)
         if not room_id:
             raise RuntimeError("Non-existent Room ID")
 
@@ -112,6 +112,8 @@ def create_booking(session: Session, data: BookingCreate, user_id: int) -> model
                 raise RuntimeError(
                     "The time overlaps with another entry. Please select different one."
                 )
+
+        session.add(new_booking)
 
         session.commit()
         session.refresh(new_booking)
