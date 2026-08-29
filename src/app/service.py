@@ -89,6 +89,29 @@ def create_room(session: Session, data: RoomCreate) -> models.Room:
         raise
 
 
+def get_all_rooms(session: Session):
+    statement = select(models.Room)
+    rooms = session.scalars(statement).all()
+
+    return rooms
+
+
+def delete_room(session: Session, room_id: int):
+    try:
+        statement = select(models.Room).where(models.Room.room_id == room_id)
+        room = session.scalar(statement)
+
+        if not room:
+            raise RuntimeError("Incorrect Room ID")
+
+        session.delete(room)
+        session.commit()
+
+    except Exception:
+        session.rollback()
+        raise
+
+
 def create_booking(session: Session, data: BookingCreate, user_id: int) -> models.Booking:
     try:
         new_booking = models.Booking(

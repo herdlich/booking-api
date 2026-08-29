@@ -4,7 +4,7 @@ from typing import Annotated
 
 from src.app.schemas import RoomCreate, RoomResponse
 from src.app.models import Room
-from src.app.service import create_room
+from src.app.service import create_room, get_all_rooms, delete_room
 from src.app.database import get_session
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
@@ -14,3 +14,14 @@ router = APIRouter(prefix="/rooms", tags=["Rooms"])
 def create_room_endpoint(data: RoomCreate, session: Annotated[Session, Depends(get_session)]):
     room = create_room(session, data)
     return room
+
+
+@router.get("", response_model=list[RoomResponse], summary="List Rooms")
+def get_all_rooms_endpoint(session: Annotated[Session, Depends(get_session)]):
+    return get_all_rooms(session)
+
+
+@router.delete("/{room_id}", summary="Delete Room")
+def delete_room_endpoint(room_id: int, session: Annotated[Session, Depends(get_session)]):
+    delete_room(session, room_id)
+    return {"status": "success", "message": "booking deleted"}
