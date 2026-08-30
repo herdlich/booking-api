@@ -1,5 +1,6 @@
 from sqlalchemy import ForeignKey, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import ExcludeConstraint
 from datetime import datetime
 
 from src.app.database import Base
@@ -37,21 +38,27 @@ class Room(Base):
 class Booking(Base):
     __tablename__ = "bookings"
 
-    __table_args__ = (
-        CheckConstraint(
-            "start_at < end_at",
-            name="ck_bookings_time_range"
-        ),
-    )
-
     booking_id: Mapped[int] = mapped_column(primary_key=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
 
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.room_id"))
 
-    start_at: Mapped[datetime]
+    start_at: Mapped[datetime] = mapped_column()
 
-    end_at: Mapped[datetime]
+    end_at: Mapped[datetime] = mapped_column()
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    __table_args__ = (
+            CheckConstraint(
+                "start_at < end_at",
+                name="ck_bookings_time_range"
+            ),
+            ExcludeConstraint(
+                ("room_id", "="),
+                (func.tsrange(start_at, end_at, "[)"), "&&"),
+                using="gist",
+                name="no_overlapping_bookings"
+            )
+        )
