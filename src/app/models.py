@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, func, CheckConstraint
+from sqlalchemy import ForeignKey, func, CheckConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import ExcludeConstraint
 from datetime import datetime
@@ -13,9 +13,18 @@ class User(Base):
 
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
 
+    role: Mapped[str] = mapped_column(server_default=text("'user'"), nullable=False)
+
     password_hash: Mapped[str]
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('user', 'admin')",
+            name="check_valid_user_roles"
+        ),
+    )
 
 
 class Room(Base):

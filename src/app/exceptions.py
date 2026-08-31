@@ -24,3 +24,10 @@ class IncorrectBookingIdError(Exception):
 
 class NoPermissionToDeleteBookingError(Exception):
     pass
+
+
+class NoPermissionToCreateRoomError(Exception):
+    pass
+
+class NoPermissionToDeleteRoomError(Exception):
+    pass

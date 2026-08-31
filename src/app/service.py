@@ -31,6 +31,8 @@ from src.app.exceptions import (
     TimeOverlapError,
     IncorrectBookingIdError,
     NoPermissionToDeleteBookingError,
+    NoPermissionToCreateRoomError,
+    NoPermissionToDeleteRoomError,
 )
 
 
@@ -84,8 +86,14 @@ def get_current_user(
     return user
 
 
-def create_room(session: Session, data: RoomCreate) -> models.Room:
+def create_room(session: Session, data: RoomCreate, current_user: models.User) -> models.Room:
     try:
+        statement = select(models.User).where(models.User.user_id == current_user.user_id)
+        user = session.scalar(statement)
+
+        if user.role != "admin":
+            raise NoPermissionToCreateRoomError
+
         room = models.Room(name=data.name, capacity=data.capacity)
 
         session.add(room)
@@ -106,8 +114,14 @@ def get_all_rooms(session: Session):
     return rooms
 
 
-def delete_room(session: Session, room_id: int):
+def delete_room(session: Session, room_id: int, current_user: models.User):
     try:
+        user_statement = select(models.User).where(models.User.user_id == current_user.user_id)
+        user = session.scalar(user_statement)
+
+        if user.role != "admin":
+            raise NoPermissionToDeleteRoomError
+
         statement = select(models.Room).where(models.Room.room_id == room_id)
         room = session.scalar(statement)
 

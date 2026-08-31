@@ -3,17 +3,32 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 
 from src.app.schemas import RoomCreate, RoomResponse
-from src.app.service import create_room, get_all_rooms, delete_room
+from src.app.service import create_room, get_all_rooms, delete_room, get_current_user
 from src.app.database import get_session
-from src.app.exceptions import IncorrectRoomIdError
+from src.app.exceptions import (
+    IncorrectRoomIdError,
+    NoPermissionToCreateRoomError,
+    NoPermissionToDeleteRoomError,
+)
+from src.app.models import User
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
 
 
 @router.post("", response_model=RoomResponse, summary="Create Room")
-def create_room_endpoint(data: RoomCreate, session: Annotated[Session, Depends(get_session)]):
-    room = create_room(session, data)
-    return room
+def create_room_endpoint(
+    data: RoomCreate,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    try:
+        room = create_room(session, data, current_user)
+        return room
+    except NoPermissionToCreateRoomError:
+        raise HTTPException(
+            status_code=403,
+            detail="You dont have the required permissions"
+        )
 
 
 @router.get("", response_model=list[RoomResponse], summary="List Rooms")
@@ -22,12 +37,21 @@ def get_all_rooms_endpoint(session: Annotated[Session, Depends(get_session)]):
 
 
 @router.delete("/{room_id}", summary="Delete Room")
-def delete_room_endpoint(room_id: int, session: Annotated[Session, Depends(get_session)]):
+def delete_room_endpoint(
+    room_id: int,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
     try:
-        delete_room(session, room_id)
+        delete_room(session, room_id, current_user)
         return {"status": "success", "message": "booking deleted"}
     except IncorrectRoomIdError:
         raise HTTPException(
             status_code=404,
             detail="This Room ID does not exist",
+        )
+    except NoPermissionToDeleteRoomError:
+        raise HTTPException(
+            status_code=403,
+            detail="You dont have the required permissions"
         )
