@@ -44,7 +44,7 @@ def delete_room_endpoint(
 ):
     try:
         delete_room(session, room_id, current_user)
-        return {"status": "success", "message": "booking deleted"}
+        return {"status": "success", "message": "room deleted"}
     except IncorrectRoomIdError:
         raise HTTPException(
             status_code=404,
