@@ -20,14 +20,15 @@ def create_user_endpoint(data: UserCreate, session: Annotated[Session, Depends(g
             status_code=409,
             detail="User with this email already exists",
         )
+
+
+@router.post("/login", response_model=TokenResponse, summary="Sign In")
+def login_user_endpoint(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: Annotated[Session, Depends(get_session)]):
+    try:
+        user_login = UserLogin(email=form_data.username, password=form_data.password)
+        return login_user(session, user_login)
     except InvalidCredentialsError:
         raise HTTPException(
             status_code=401,
             detail="Invalid credentials",
         )
-
-
-@router.post("/login", response_model=TokenResponse, summary="Sign In")
-def login_user_endpoint(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: Annotated[Session, Depends(get_session)]):
-    user_login = UserLogin(email=form_data.username, password=form_data.password)
-    return login_user(session, user_login)
