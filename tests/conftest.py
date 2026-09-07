@@ -13,6 +13,7 @@ from pathlib import Path
 from src.app import models
 from src.app.api import app
 from src.app.database import get_session
+from src.app.service import get_current_user
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -78,4 +79,51 @@ def client(db_session):
     test_client = TestClient(app)
     yield test_client
 
-    app.dependency_overrides.clear()
+    app.dependency_overrides.pop(get_session, None)
+
+
+@pytest.fixture()
+def admin_user(db_session):
+    user = models.User(
+        email="admin@test.py",
+        password_hash="argon2$hashedpass",
+        role="admin",
+    )
+
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    return user
+
+
+@pytest.fixture()
+def as_admin(admin_user):
+    app.dependency_overrides[get_current_user] = lambda: admin_user
+
+    yield
+
+    app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.fixture()
+def default_user(db_session):
+    user = models.User(
+        email="example@test.py",
+        password_hash="argon2$hashedpass",
+    )
+
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    return user
+
+
+@pytest.fixture()
+def as_user(default_user):
+    app.dependency_overrides[get_current_user] = lambda: default_user
+
+    yield
+
+    app.dependency_overrides.pop(get_current_user, None)
