@@ -35,3 +35,28 @@ def test_create_existing_user_endpoint(client):
 
     response_second = client.post("/auth/register", json=payload)
     assert response_second.status_code == 409
+
+
+def test_login_user_endpoint(client):
+    payload = {
+        "email": "example@test.py",
+        "password": "qwerty",
+    }
+
+    response = client.post("/auth/register", json=payload)
+
+    assert response.status_code == 200
+
+    payload_login = {
+        "username": "example@test.py",
+        "password": "qwerty",
+    }
+
+    response_login = client.post("/auth/login", data=payload_login)
+
+    assert response_login.status_code == 200
+
+    data = response_login.json()
+
+    assert isinstance(data["access_token"], str)
+    assert data["token_type"] == "bearer"
