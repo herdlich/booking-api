@@ -63,7 +63,7 @@ def delete_booking_endpoint(
     except IncorrectBookingIdError:
         raise HTTPException(
             status_code=404,
-            detail="This Book ID does not exist",
+            detail="This Booking ID does not exist",
         )
     except NoPermissionToDeleteBookingError:
         raise HTTPException(
