@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import select, exists
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from typing import Annotated
 from fastapi import Depends
@@ -8,11 +9,8 @@ from src.app import models
 from src.app.schemas import (
     UserCreate,
     UserLogin,
-    UserResponse,
     RoomCreate,
-    RoomResponse,
     BookingCreate,
-    BookingResponse,
     TokenResponse,
 )
 from src.app.security import (
@@ -171,6 +169,20 @@ def create_booking(
         session.refresh(new_booking)
 
         return new_booking
+
+    except IntegrityError as exc:
+        session.rollback()
+
+        constraint_name = getattr(
+            getattr(exc.orig, "diag", None),
+            "constraint_name",
+            None,
+        )
+
+        if constraint_name == "no_overlapping_bookings":
+            raise TimeOverlapError from exc
+
+        raise
 
     except Exception:
         session.rollback()
