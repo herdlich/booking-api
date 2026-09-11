@@ -3,6 +3,10 @@ import sys
 import pytest
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
+from threading import Barrier
+from concurrent.futures import ThreadPoolExecutor
+
+from sqlalchemy.orm import sessionmaker
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -113,3 +117,54 @@ def test_create_booking_with_incorrect_time_range(db_session):
     with pytest.raises(IntegrityError):
         db_session.add(booking)
         db_session.commit()
+
+
+def test_create_booking_with_time_overlap_at_the_same_time_in_database(test_engine, db_session):
+    room = create_room_for_tests(db_session, "Test Room", 10)
+    user = create_user_for_tests(db_session, email="example@test.py")
+
+    start_at = datetime.fromisoformat("1999-12-31T23:00:00")
+    end_at = datetime.fromisoformat("2000-01-01T00:00:00")
+
+    SessionFactory = sessionmaker(bind=test_engine)
+
+    barrier = Barrier(2)
+
+    def make_booking():
+        with SessionFactory() as session:
+            barrier.wait()
+
+            booking = models.Booking(
+                user_id=user.user_id,
+                room_id=room.room_id,
+                start_at=start_at,
+                end_at=end_at,
+            )
+
+            session.add(booking)
+
+            try:
+                session.commit()
+                return "created"
+
+            except IntegrityError as exc:
+                constraint_name = getattr(
+                    getattr(exc.orig, "diag", None),
+                    "constraint_name",
+                    None
+                )
+
+                if constraint_name == "no_overlapping_bookings":
+                    return "conflict"
+
+                raise
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(
+            executor.map(
+                lambda _: make_booking(),
+                range(2),
+            )
+        )
+
+    assert sorted(results) == ["conflict", "created"]
