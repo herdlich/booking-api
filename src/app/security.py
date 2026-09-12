@@ -8,6 +8,8 @@ import os
 
 from fastapi.security import OAuth2PasswordBearer
 
+from src.app.exceptions import UnauthorizedError
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -42,13 +44,15 @@ def create_access_token(user_id: int) -> str:
 
 
 def decode_access_token(token: str) -> int:
-    payload = jwt.decode(token, jwt_secret_key, algorithms=[jwt_algorithm])
+    try:
+        payload = jwt.decode(token, jwt_secret_key, algorithms=[jwt_algorithm])
+
+    except jwt.PyJWTError:
+        raise UnauthorizedError
 
     user_id = payload.get("sub")
-    if not user_id:
-        raise RuntimeError("Error sub")
-    
-    if not user_id.isdigit():
-        raise RuntimeError("Uncorrect User-ID result")
+
+    if not user_id and not user_id.isdigit():
+        raise UnauthorizedError
 
     return int(user_id)
