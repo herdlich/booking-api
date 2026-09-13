@@ -11,7 +11,8 @@ python-multipart==0.0.32
 python-dotenv==1.2.2
 
 PyJWT==2.13.0
-pwdlib==0.3.0
+pwdlib[argon2]==0.3.0
+
 
 pytest==9.1.1
 httpx2==2.12.0
