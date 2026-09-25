@@ -1,36 +1,30 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from typing import Annotated
-from fastapi import Depends
-
 from src.app import models
-from src.app.schemas import (
-    UserCreate,
-    UserLogin,
-    RoomCreate,
-    BookingCreate,
-    TokenResponse,
-)
-from src.app.security import (
-    hash_password,
-    verify_password,
-    create_access_token,
-    decode_access_token,
-    oauth2_scheme,
-)
-from src.app.database import get_session
 from src.app.exceptions import (
     EmailAlreadyExistsError,
-    InvalidCredentialsError,
-    UnauthorizedError,
-    IncorrectRoomIdError,
-    TimeOverlapError,
     IncorrectBookingIdError,
-    NoPermissionToDeleteBookingError,
+    IncorrectRoomIdError,
+    InvalidCredentialsError,
     NoPermissionToCreateRoomError,
+    NoPermissionToDeleteBookingError,
     NoPermissionToDeleteRoomError,
+    TimeOverlapError,
+    UnauthorizedError,
+)
+from src.app.schemas import (
+    BookingCreate,
+    RoomCreate,
+    TokenResponse,
+    UserCreate,
+    UserLogin,
+)
+from src.app.security import (
+    create_access_token,
+    decode_access_token,
+    hash_password,
+    verify_password,
 )
 
 

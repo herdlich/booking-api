@@ -1,11 +1,12 @@
-from fastapi import Depends, APIRouter, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
-from src.app.schemas import UserCreate, UserLogin, UserResponse, TokenResponse
-from src.app.service import UserService
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+
 from src.app.dependencies import get_user_service
 from src.app.exceptions import EmailAlreadyExistsError, InvalidCredentialsError
+from src.app.schemas import TokenResponse, UserCreate, UserLogin, UserResponse
+from src.app.service import UserService
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

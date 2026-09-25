@@ -1,12 +1,11 @@
-from pwdlib import PasswordHash
-
-import jwt
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from dotenv import load_dotenv
-import os
 
+import jwt
+from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
+from pwdlib import PasswordHash
 
 from src.app.exceptions import UnauthorizedError
 

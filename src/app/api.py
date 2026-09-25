@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from src.app.routers import users, bookings, rooms
 from src.app.exceptions import UnauthorizedError
+from src.app.routers import bookings, rooms, users
 
 app = FastAPI(
     title="Booking API",

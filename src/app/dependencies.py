@@ -1,10 +1,11 @@
 from typing import Annotated
+
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from src.app.database import get_session
-from src.app.service import UserService, RoomService, BookingService
 from src.app.security import oauth2_scheme
+from src.app.service import BookingService, RoomService, UserService
 
 
 def get_current_user(

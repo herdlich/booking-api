@@ -1,16 +1,16 @@
-from fastapi import Depends, APIRouter, HTTPException
-from sqlalchemy.orm import Session
 from typing import Annotated
 
-from src.app.schemas import RoomCreate, RoomResponse
-from src.app.service import RoomService
-from src.app.dependencies import get_room_service, get_current_user
+from fastapi import APIRouter, Depends, HTTPException
+
+from src.app.dependencies import get_current_user, get_room_service
 from src.app.exceptions import (
     IncorrectRoomIdError,
     NoPermissionToCreateRoomError,
     NoPermissionToDeleteRoomError,
 )
 from src.app.models import User
+from src.app.schemas import RoomCreate, RoomResponse
+from src.app.service import RoomService
 
 router = APIRouter(prefix="/rooms", tags=["Rooms"])
 

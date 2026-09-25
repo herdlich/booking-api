@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr, ConfigDict, Field, model_validator
 from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 
 class SchemaBase(BaseModel):

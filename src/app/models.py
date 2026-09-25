@@ -1,7 +1,8 @@
-from sqlalchemy import ForeignKey, func, CheckConstraint, text
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import ExcludeConstraint
 from datetime import datetime
+
+from sqlalchemy import CheckConstraint, ForeignKey, func, text
+from sqlalchemy.dialects.postgresql import ExcludeConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 from src.app.database import Base
 
