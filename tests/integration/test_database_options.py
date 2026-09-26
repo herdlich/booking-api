@@ -1,5 +1,6 @@
 import os
 import sys
+
 from sqlalchemy import select
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -9,6 +10,7 @@ from src.app import models
 
 def test_save_data_to_database(db_session):
     user = models.User(
+        username="user",
         email="example@test.py",
         password_hash="argon2-hashedpass",
     )
@@ -24,10 +26,12 @@ def test_save_data_to_database(db_session):
     assert len(users) == 1
     assert user.user_id is not None
     assert user.email == "example@test.py"
+    assert user.username == "user"
 
 
 def test_rollback_option(db_session):
     user = models.User(
+        username="user",
         email="example@test.py",
         password_hash="argon2-hashedpass",
     )

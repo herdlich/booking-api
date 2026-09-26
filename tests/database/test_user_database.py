@@ -1,5 +1,6 @@
 import os
 import sys
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -13,6 +14,7 @@ from src.app import models
 # =========================================================
 def test_create_user_in_database(db_session):
     user = models.User(
+        username="user",
         email="example@test.py",
         password_hash="argon2-hashedpass",
     )
@@ -23,6 +25,7 @@ def test_create_user_in_database(db_session):
 
     assert isinstance(user.user_id, int)
     assert user.email == "example@test.py"
+    assert user.username == "user"
 
 
 # =========================================================
@@ -30,7 +33,8 @@ def test_create_user_in_database(db_session):
 # =========================================================
 def test_create_existing_user_in_database(db_session):
     user_first = models.User(
-        email="example@test.py",
+        username="user_1",
+        email="example_1@test.py",
         password_hash="argon2-hashedpass",
     )
 
@@ -39,7 +43,8 @@ def test_create_existing_user_in_database(db_session):
     db_session.refresh(user_first)
 
     user_second = models.User(
-        email="example@test.py",
+        username="user_1",
+        email="example_2@test.py",
         password_hash="argon2-hashedpass",
     )
 
@@ -50,6 +55,7 @@ def test_create_existing_user_in_database(db_session):
 
 def test_create_user_with_incorrectly_role_in_database(db_session):
     user = models.User(
+        username="user",
         email="example@test.py",
         password_hash="argon2-hashedpass",
         role="not-allowed-role",

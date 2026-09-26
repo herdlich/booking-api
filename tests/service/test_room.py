@@ -1,37 +1,34 @@
-import sys
 import os
+import sys
+
 from sqlalchemy import select
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.app.service import (
-    create_room,
-    delete_room,
-    get_all_rooms,
-    create_user,
-)
+from src.app.models import Room, User
 from src.app.schemas import (
     RoomCreate,
     UserCreate,
 )
-from src.app.models import User, Room
+from src.app.service import RoomService, UserService
 
 
-def create_user_for_tests(db_session, email, password):
+def create_user_for_tests(db_session, username, email, password):
+    user_service = UserService(db_session)
+
     user_data = UserCreate(
+        username=username,
         email=email,
         password=password,
     )
 
-    user = create_user(db_session, user_data)
+    user = user_service.create_user(user_data)
 
     return user
 
 
-def set_admin_for_tests(db_session):
-    create_user_for_tests(db_session, "admin@test.py", "qwerty")
-
-    statement = select(User).where(User.email == "admin@test.py")
+def set_admin_for_tests(db_session, user):
+    statement = select(User).where(User.email == user.email)
     user = db_session.scalar(statement)
 
     user.role = "admin"
@@ -43,28 +40,34 @@ def set_admin_for_tests(db_session):
 
 
 def test_create_room_with_admin(db_session):
-    admin = set_admin_for_tests(db_session)
+    room_service = RoomService(db_session)
+
+    user = create_user_for_tests(db_session, username="admin", email="admin@test.py", password="qwerty")
+    admin = set_admin_for_tests(db_session, user)
 
     room_data = RoomCreate(
         name="Test Room",
         capacity=10,
     )
 
-    response = create_room(db_session, room_data, admin)
+    response = room_service.create_room(room_data, admin)
 
     assert response.name == "Test Room"
     assert response.capacity == 10
 
 
 def test_delete_room_without_admin(db_session):
-    admin = set_admin_for_tests(db_session)
+    room_service = RoomService(db_session)
+
+    user = create_user_for_tests(db_session, username="admin", email="admin@test.py", password="qwerty")
+    admin = set_admin_for_tests(db_session, user)
 
     room_data = RoomCreate(
         name="Test Room",
         capacity=10,
     )
 
-    created_room = create_room(db_session, room_data, admin)
+    created_room = room_service.create_room(room_data, admin)
 
     assert created_room.name == "Test Room"
     assert created_room.capacity == 10
@@ -77,7 +80,7 @@ def test_delete_room_without_admin(db_session):
     assert room.name == "Test Room"
     assert room.capacity == 10
 
-    delete_room(db_session, room_id, admin)
+    room_service.delete_room(room_id, admin)
 
     statement_deleted = select(Room).where(Room.room_id == room_id)
     deleted_room = db_session.scalar(statement_deleted)
@@ -86,7 +89,10 @@ def test_delete_room_without_admin(db_session):
 
 
 def test_get_all_rooms(db_session):
-    admin = set_admin_for_tests(db_session)
+    room_service = RoomService(db_session)
+
+    user = create_user_for_tests(db_session, username="admin", email="admin@test.py", password="qwerty")
+    admin = set_admin_for_tests(db_session, user)
 
     for i in range(1, 3):
         room_data = RoomCreate(
@@ -94,9 +100,9 @@ def test_get_all_rooms(db_session):
             capacity=10 + i,
         )
 
-        create_room(db_session, room_data, admin)
+        room_service.create_room(room_data, admin)
 
-    all_rooms = get_all_rooms(db_session)
+    all_rooms = room_service.get_all_rooms()
 
     assert len(all_rooms) == 2
 

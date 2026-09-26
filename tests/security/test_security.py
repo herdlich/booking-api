@@ -1,8 +1,9 @@
 import os
 import sys
+from datetime import datetime, timedelta, timezone
+
 import jwt
 from dotenv import load_dotenv
-from datetime import datetime, timedelta, timezone
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -14,8 +15,9 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 
-def create_user_for_tests(db_session, email, role):
+def create_user_for_tests(db_session, username, email, role):
     user = models.User(
+        username=username,
         email=email,
         password_hash="argon2-hashedpass",
         role=role
@@ -32,7 +34,7 @@ def create_user_for_tests(db_session, email, role):
 #                        HAPPY PATH
 # =========================================================
 def test_valid_token_returns_200(client, db_session):
-    user = create_user_for_tests(db_session, "example@test.py", "user")
+    user = create_user_for_tests(db_session, "user", "example@test.py", "user")
 
     token = create_access_token(user.user_id)
 
@@ -80,7 +82,7 @@ def test_expired_token(client):
 
 
 def test_valid_admin_token_returns_200(client, db_session):
-    user = create_user_for_tests(db_session, "admin@test.py", "admin")
+    user = create_user_for_tests(db_session, "admin", "admin@test.py", "admin")
 
     token = create_access_token(user.user_id)
 
@@ -94,12 +96,12 @@ def test_valid_admin_token_returns_200(client, db_session):
         headers={"Authorization": f"Bearer {token}"},
         json=payload_room,
     )
-    print(response.json())
+    
     assert response.status_code == 200
 
 
 def test_admin_router_with_user_token_returns_403(client, db_session):
-    user = create_user_for_tests(db_session, "admin@test.py", "user")
+    user = create_user_for_tests(db_session, "user", "admin@test.py", "user")
 
     token = create_access_token(user.user_id)
 
@@ -113,5 +115,5 @@ def test_admin_router_with_user_token_returns_403(client, db_session):
         headers={"Authorization": f"Bearer {token}"},
         json=payload_room,
     )
-    print(response.json())
+
     assert response.status_code == 403

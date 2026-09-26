@@ -1,19 +1,20 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from pathlib import Path
+
 import pytest
-from sqlalchemy import create_engine, delete
-from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
-from pathlib import Path
+from sqlalchemy import create_engine, delete
+from sqlalchemy.orm import sessionmaker
 
 from src.app import models
 from src.app.api import app
 from src.app.database import get_session
-from src.app.service import get_current_user
+from src.app.dependencies import get_current_user
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -85,6 +86,7 @@ def client(db_session):
 @pytest.fixture()
 def admin_user(db_session):
     user = models.User(
+        username="admin",
         email="admin@test.py",
         password_hash="argon2$hashedpass",
         role="admin",
@@ -109,6 +111,7 @@ def as_admin(admin_user):
 @pytest.fixture()
 def default_user(db_session):
     user = models.User(
+        username="user",
         email="example@test.py",
         password_hash="argon2$hashedpass",
     )

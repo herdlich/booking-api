@@ -1,6 +1,8 @@
-from sqlalchemy import inspect
 from argparse import Namespace
+
 from alembic.config import Config
+from sqlalchemy import inspect
+
 from alembic import command
 
 

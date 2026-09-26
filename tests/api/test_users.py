@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 # =========================================================
 def test_create_user_endpoint(client):
     payload = {
+        "username": "user",
         "email": "example@test.py",
         "password": "qwerty",
     }
@@ -29,6 +30,7 @@ def test_create_user_endpoint(client):
 
 def test_login_user_endpoint(client):
     payload = {
+        "username": "user",
         "email": "example@test.py",
         "password": "qwerty",
     }
@@ -38,7 +40,7 @@ def test_login_user_endpoint(client):
     assert response.status_code == 200
 
     payload_login = {
-        "username": "example@test.py",
+        "username": "user",
         "password": "qwerty",
     }
 
@@ -57,6 +59,7 @@ def test_login_user_endpoint(client):
 # =========================================================
 def test_create_user_with_email_already_exists_error(client):
     payload = {
+        "username": "user",
         "email": "example@test.py",
         "password": "qwerty",
     }
@@ -70,6 +73,7 @@ def test_create_user_with_email_already_exists_error(client):
 
 def test_login_user_with_invalid_credentials_error(client):
     payload_for_create = {
+        "username": "user",
         "email": "example@test.py",
         "password": "qwerty",
     }
@@ -78,17 +82,17 @@ def test_login_user_with_invalid_credentials_error(client):
     assert response_create_user.status_code == 200
 
     payload_for_login_wrong_password = {
-        "username": "example@test.py",
+        "username": "user",
         "password": "ytrewq",
     }
 
     response_login_user_wrong_password = client.post("/auth/login", data=payload_for_login_wrong_password)
     assert response_login_user_wrong_password.status_code == 401
 
-    payload_for_login_non_existent_email = {
-        "username": "admin@test.py",
+    payload_for_login_non_existent_username = {
+        "username": "resu",
         "password": "qwerty",
     }
 
-    response_login_user_non_existent_email = client.post("/auth/login", data=payload_for_login_non_existent_email)
+    response_login_user_non_existent_email = client.post("/auth/login", data=payload_for_login_non_existent_username)
     assert response_login_user_non_existent_email.status_code == 401

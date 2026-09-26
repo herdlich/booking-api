@@ -1,11 +1,11 @@
 import os
 import sys
-import pytest
-from datetime import datetime
-from sqlalchemy.exc import IntegrityError
-from threading import Barrier
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from threading import Barrier
 
+import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -26,8 +26,9 @@ def create_room_for_tests(db_session, name, capacity):
     return room
 
 
-def create_user_for_tests(db_session, email):
+def create_user_for_tests(db_session, username, email):
     user = models.User(
+        username=username,
         email=email,
         password_hash="argon2-hashedpass",
     )
@@ -44,7 +45,7 @@ def create_user_for_tests(db_session, email):
 # =========================================================
 def test_create_booking_in_database(db_session):
     room = create_room_for_tests(db_session, "Test Room", 10)
-    user = create_user_for_tests(db_session, email="example@test.py")
+    user = create_user_for_tests(db_session, username="user", email="example@test.py")
 
     start_at = datetime.fromisoformat("1999-12-31T23:00:00")
     end_at = datetime.fromisoformat("2000-01-01T00:00:00")
@@ -70,7 +71,7 @@ def test_create_booking_in_database(db_session):
 # =========================================================
 def test_create_booking_with_time_overlap_in_database(db_session):
     room = create_room_for_tests(db_session, "Test Room", 10)
-    user = create_user_for_tests(db_session, email="example@test.py")
+    user = create_user_for_tests(db_session, username="user", email="example@test.py")
 
     start_at_first = datetime.fromisoformat("1999-12-31T23:00:00")
     end_at_first = datetime.fromisoformat("2000-01-01T00:00:00")
@@ -102,7 +103,7 @@ def test_create_booking_with_time_overlap_in_database(db_session):
 
 def test_create_booking_with_incorrect_time_range(db_session):
     room = create_room_for_tests(db_session, "Test Room", 10)
-    user = create_user_for_tests(db_session, email="example@test.py")
+    user = create_user_for_tests(db_session, username="user", email="example@test.py")
 
     start_at = datetime.fromisoformat("2000-01-01T00:00:00")
     end_at = datetime.fromisoformat("1999-12-31T23:00:00")
@@ -121,7 +122,7 @@ def test_create_booking_with_incorrect_time_range(db_session):
 
 def test_create_booking_with_time_overlap_at_the_same_time_in_database(test_engine, db_session):
     room = create_room_for_tests(db_session, "Test Room", 10)
-    user = create_user_for_tests(db_session, email="example@test.py")
+    user = create_user_for_tests(db_session, username="user", email="example@test.py")
 
     start_at = datetime.fromisoformat("1999-12-31T23:00:00")
     end_at = datetime.fromisoformat("2000-01-01T00:00:00")

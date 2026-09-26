@@ -1,11 +1,13 @@
 import os
 import sys
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from src.app import models
+
 
 # =========================================================
 #                        HAPPY PATH

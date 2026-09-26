@@ -1,32 +1,30 @@
-import sys
 import os
-from sqlalchemy import select
+import sys
 from datetime import datetime
+
+from sqlalchemy import select
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.app.service import (
-    create_booking,
-    delete_booking,
-    get_my_bookings,
-    create_user,
-    create_room,
-)
+from src.app.models import Booking
 from src.app.schemas import (
     BookingCreate,
     RoomCreate,
     UserCreate,
 )
-from src.app.models import Booking
+from src.app.service import BookingService, RoomService, UserService
 
 
-def create_user_for_tests(db_session, email, password):
+def create_user_for_tests(db_session, username, email, password):
+    user_service = UserService(db_session)
+
     user_data = UserCreate(
+        username=username,
         email=email,
         password=password,
     )
 
-    user = create_user(db_session, user_data)
+    user = user_service.create_user(user_data)
 
     return user
 
@@ -41,30 +39,36 @@ def set_admin_for_tests(db_session, user):
 
 
 def create_room_for_tests(db_session, admin):
+    room_service = RoomService(db_session)
+
     room_data = RoomCreate(
         name="Test Room",
         capacity=10,
     )
 
-    room = create_room(db_session, room_data, admin)
+    room = room_service.create_room(room_data, admin)
 
     return room
 
 
 def create_booking_for_tests(db_session, user_id, room_id, start_at, end_at):
+    booking_service = BookingService(db_session)
+
     booking_data = BookingCreate(
         room_id=room_id,
         start_at=start_at,
         end_at=end_at,
     )
 
-    booking = create_booking(db_session, booking_data, user_id)
+    booking = booking_service.create_booking(booking_data, user_id)
 
     return booking
 
 
 def test_create_booking(db_session):
-    user = create_user_for_tests(db_session, email="admin@test.py", password="qwerty")
+    booking_service = BookingService(db_session)
+
+    user = create_user_for_tests(db_session, username="admin", email="admin@test.py", password="qwerty")
     admin = set_admin_for_tests(db_session, user)
     user_id = admin.user_id
 
@@ -79,7 +83,7 @@ def test_create_booking(db_session):
         start_at=start_at,
         end_at=end_at,
     )
-    response = create_booking(db_session, booking, user_id)
+    response = booking_service.create_booking(booking, user_id)
 
     assert response.room_id == room_id
     assert response.start_at == start_at
@@ -87,7 +91,9 @@ def test_create_booking(db_session):
 
 
 def test_get_my_bookings(db_session):
-    user = create_user_for_tests(db_session, "admin@test.py", "qwerty")
+    booking_service = BookingService(db_session)
+
+    user = create_user_for_tests(db_session, username="admin", email="admin@test.py", password="qwerty")
     admin = set_admin_for_tests(db_session, user)
     user_id = admin.user_id
 
@@ -107,7 +113,7 @@ def test_get_my_bookings(db_session):
     assert first_booking is not None
     assert second_booking is not None
 
-    response = get_my_bookings(db_session, user_id)
+    response = booking_service.get_my_bookings(user_id)
 
     assert response[0].room_id == room_id
     assert response[1].room_id == room_id
@@ -120,7 +126,9 @@ def test_get_my_bookings(db_session):
 
 
 def test_delete_booking(db_session):
-    user = create_user_for_tests(db_session, "admin@test.py", "qwerty")
+    booking_service = BookingService(db_session)
+
+    user = create_user_for_tests(db_session, username="admin", email="admin@test.py", password="qwerty")
     admin = set_admin_for_tests(db_session, user)
     user_id = admin.user_id
 
@@ -139,7 +147,7 @@ def test_delete_booking(db_session):
 
     booking_id = booking.booking_id
 
-    delete_booking(db_session, booking_id, user_id)
+    booking_service.delete_booking(booking_id, user_id)
 
     statement = select(Booking).where(Booking.booking_id == booking_id)
     booking_no_exist = db_session.scalar(statement)

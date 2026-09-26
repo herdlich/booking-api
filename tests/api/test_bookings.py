@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -24,6 +24,7 @@ def create_room_for_tests(db_session, name, capacity):
 
 def create_fake_user_for_tests(db_session):
     user = models.User(
+        username="fakeuser",
         email="fake@test.py",
         password_hash="argon2-hashedpass",
 
