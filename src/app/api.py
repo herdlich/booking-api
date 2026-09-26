@@ -7,7 +7,10 @@ from src.app.routers import bookings, rooms, users
 app = FastAPI(
     title="Booking API",
     description="Room booking API Project",
-    version="beta"
+    version="beta",
+    swagger_ui_parameters={
+        "persistAuthorization": True,
+    }
 )
 
 @app.exception_handler(UnauthorizedError)

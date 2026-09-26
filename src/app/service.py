@@ -42,7 +42,7 @@ class UserService:
 
             password_hash = hash_password(data.password)
 
-            user = models.User(email=data.email, password_hash=password_hash)
+            user = models.User(username=data.username, email=data.email, password_hash=password_hash)
 
             self.session.add(user)
             self.session.commit()
@@ -55,7 +55,7 @@ class UserService:
             raise
 
     def login_user(self, data: UserLogin) -> TokenResponse:
-        statement = select(models.User).where(models.User.email == data.email)
+        statement = select(models.User).where(models.User.username == data.username)
         user = self.session.scalar(statement)
 
         if not user or not verify_password(data.password, user.password_hash):

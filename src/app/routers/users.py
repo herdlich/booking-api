@@ -27,7 +27,7 @@ def create_user_endpoint(data: UserCreate,
 def login_user_endpoint(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                         service: Annotated[UserService, Depends(get_user_service)]):
     try:
-        user_login = UserLogin(email=form_data.username, password=form_data.password)
+        user_login = UserLogin(username=form_data.username, password=form_data.password)
         return service.login_user(user_login)
 
     except InvalidCredentialsError:
