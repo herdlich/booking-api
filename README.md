@@ -51,6 +51,38 @@ booking-api/
 └── requirements.txt
 ```
 
+## Database schema
+
+```mermaid
+erDiagram
+	USERS ||--o{ BOOKINGS : has
+	ROOMS ||--o{ BOOKINGS : has
+	
+	USERS{
+	int user_id PK
+	string username UK
+	string email UK
+	string role
+	string password_hash
+	datetime created_at
+	}
+	
+	ROOMS{
+	int room_id PK
+	string name
+	int capacity
+	}
+	
+	BOOKINGS{
+	int booking_id PK
+	int user_id FK
+	int room_id FK
+	datetime start_at
+	datetime end_at
+	datetime created_at
+	}
+```
+
 ## Quick Start
 
 Clone the repository:
@@ -72,16 +104,23 @@ Generate a JWT secret and add it to `.env`:
 openssl rand -hex 32
 ```
 
-Start the application:
+Build the API image and start PostgreSQL:
 
 ```bash
-docker compose up -d --build
+docker compose build
+docker compose up -d db
 ```
 
 Apply database migrations:
 
 ```bash
 docker compose run --rm api alembic upgrade head
+```
+
+Start the API:
+
+```bash
+docker compose up -d api
 ```
 
 The API is available at:
