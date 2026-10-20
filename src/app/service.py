@@ -12,6 +12,7 @@ from src.app.exceptions import (
     NoPermissionToDeleteRoomError,
     TimeOverlapError,
     UnauthorizedError,
+    UsernameAlreadyExistsError,
 )
 from src.app.schemas import (
     BookingCreate,
@@ -34,11 +35,17 @@ class UserService:
 
     def create_user(self, data: UserCreate) -> models.User:
         try:
-            statement = select(models.User).where(models.User.email == data.email)
-            existing_user = self.session.scalar(statement)
+            statement_by_email = select(models.User).where(models.User.email == data.email)
+            existing_email = self.session.scalar(statement_by_email)
 
-            if existing_user is not None:
+            if existing_email is not None:
                 raise EmailAlreadyExistsError
+
+            statement_by_username = select(models.User).where(models.User.username == data.username)
+            existing_username = self.session.scalar(statement_by_username)
+
+            if existing_username is not None:
+                raise UsernameAlreadyExistsError
 
             password_hash = hash_password(data.password)
 
